@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: 001_create_user_table.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 002_user_credit_card.yaml
+      relativeToChangelogFile: true

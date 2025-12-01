@@ -1,0 +1,3 @@
+id;username;name;surname;email;password;role
+8ecac7e3-35e1-46fc-b9b0-b89389daa3dc;ADM_ea8fbb7a;ADMIN;USER;admin-user@hyperativa.com;$2b$12$eikhgzWxle.ou7PcAud0jOa6ghe6e7qLLFDg.ZYOblnYB3FcGRM1i;ROLE_ADMIN
+099304f8-3409-4499-b4fb-60ea77b6114d;USR_79a5b88d;DEV;USER;dev-user@hyperativa.com;$2b$12$eikhgzWxle.ou7PcAud0jOa6ghe6e7qLLFDg.ZYOblnYB3FcGRM1i;ROLE_USER

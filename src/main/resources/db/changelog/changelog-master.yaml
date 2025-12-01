@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - property:
+      dbms:  postgresql
+      name:  uuid_function
+      value: gen_random_uuid()
+  - include:
+      file: ./db/changelog/0001/changelog.yaml

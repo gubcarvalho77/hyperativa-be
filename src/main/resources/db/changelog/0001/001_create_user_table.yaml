@@ -1,0 +1,77 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Gustavo Carvalho
+      changes:
+        - createTable:
+            tableName: user
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+#                  defaultValueComputed: "${uuid_function}"
+              - column:
+                  name: username
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: surname
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_date
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
+#                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: modified_date
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
+              - column:
+                  name: modified_by
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+        - addUniqueConstraint:
+            columnNames: email
+            tableName: user
+            constraintName: uq_user_email
+        - loadData:
+            commentLineStartsWith: //
+            file: data/users.csv
+            relativeToChangelogFile: true
+            separator: ;
+            tableName: user
+            usePreparedStatements: true

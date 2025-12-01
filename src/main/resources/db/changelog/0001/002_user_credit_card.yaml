@@ -1,0 +1,79 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2
+      author: Gustavo Carvalho
+      changes:
+        - createTable:
+            tableName: user_credit_card
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: card_number_encrypted
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: card_hash
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: card_last4
+                  type: VARCHAR(4)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_date
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_by
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: modified_date
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
+              - column:
+                  name: modified_by
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+        - addUniqueConstraint:
+            tableName: user_credit_card
+            columnNames: user_id, card_hash
+            constraintName: uk_user_credit_card_hash
+        - addForeignKeyConstraint:
+            baseTableName: user_credit_card
+            baseColumnNames: user_id
+            referencedTableName: user
+            referencedColumnNames: id
+            constraintName: fk_user_credit_card_user
+            onDelete: CASCADE
+        - createIndex:
+            tableName: user_credit_card
+            indexName: idx_user_credit_card_user
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: user_credit_card
+            indexName: idx_user_credit_card_hash
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: card_hash
