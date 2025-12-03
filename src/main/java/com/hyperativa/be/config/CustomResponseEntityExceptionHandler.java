@@ -1,5 +1,6 @@
 package com.hyperativa.be.config;
 
+import com.hyperativa.be.exceptions.CreditCardException;
 import com.hyperativa.be.exceptions.ResourceExistsException;
 import com.hyperativa.be.exceptions.ResourceNotFoundException;
 import com.hyperativa.be.exceptions.ValidationException;
@@ -79,6 +80,22 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         var detail = ProblemDetail.forStatus(status);
         detail.setTitle(status.getReasonPhrase());
         detail.setDetail("BUSINESS_EXCEPTION_FOUND");
+        detail.setProperty("code", ex.getMessage());
+        detail.setProperty("timestamp", Instant.now());
+
+        return ResponseEntity.status(status).body(detail);
+    }
+
+    @ExceptionHandler(CreditCardException.class)
+    protected ResponseEntity<Object> handleCreditCardException(
+            CreditCardException ex,
+            HttpServletRequest request
+    ) {
+        final var status = HttpStatus.UNPROCESSABLE_ENTITY;
+
+        var detail = ProblemDetail.forStatus(status);
+        detail.setTitle(status.getReasonPhrase());
+        detail.setDetail("UNPROCESSABLE_ENTITY_EXCEPTION_FOUND");
         detail.setProperty("code", ex.getMessage());
         detail.setProperty("timestamp", Instant.now());
 

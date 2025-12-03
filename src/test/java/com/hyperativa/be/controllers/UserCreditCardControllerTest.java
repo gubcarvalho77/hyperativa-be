@@ -2,6 +2,7 @@ package com.hyperativa.be.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hyperativa.be.dtos.CreditCardRequest;
+import com.hyperativa.be.exceptions.CreditCardException;
 import com.hyperativa.be.services.creditcard.CreditCardBatchService;
 import com.hyperativa.be.services.creditcard.UserCreditCardService;
 import com.hyperativa.be.util.LoggedUsernameSupplier;
@@ -111,5 +112,16 @@ class UserCreditCardControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(creditCardBatchService, never()).processFile(any());
+    }
+
+    @Test
+    void testUploadBatch_422() throws Exception {
+        var fileContent = "DESAFIO-HYPERATIVA\nC2 4111111111111111\nC2 4111111111111111\nLOTE0001000002";
+        var multipartFile = new MockMultipartFile("file", "batch.txt", "text/plain", fileContent.getBytes());
+
+        doThrow(new CreditCardException("any")).when(creditCardBatchService).processFile(any());
+
+        mockMvc.perform(multipart("/credit-cards/upload").file(multipartFile))
+                .andExpect(status().isUnprocessableEntity());
     }
 }

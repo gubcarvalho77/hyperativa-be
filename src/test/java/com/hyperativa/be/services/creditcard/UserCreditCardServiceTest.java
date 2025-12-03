@@ -106,7 +106,11 @@ class UserCreditCardServiceTest {
         service.registerAllCreditCards(UUID.randomUUID(), cardNumbers);
 
         verify(userRepository).findByUsername(any());
-        verify(userCreditCardRepository, times(cardNumbers.size())).save(any());
+
+        var arg = ArgumentCaptor.forClass(List.class);
+        verify(userCreditCardRepository).saveAll(arg.capture());
+
+        assertThat(arg.getValue()).hasSameSizeAs(cardNumbers);
     }
 
     @Test

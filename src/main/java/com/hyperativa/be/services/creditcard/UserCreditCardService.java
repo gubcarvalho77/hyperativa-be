@@ -43,7 +43,7 @@ public class UserCreditCardService {
 
         log.info("Registering credit card for user: {}", username);
 
-        var saved = saveCreditCard(
+        var userCreditCard = buildCreditCard(
                 UUID.randomUUID(),
                 retrieveUser(username),
                 request
@@ -51,7 +51,7 @@ public class UserCreditCardService {
 
         log.info("Finished to register credit card for user: {}", username);
 
-        return saved.getId();
+        return userCreditCardRepository.save(userCreditCard).getId();
     }
 
     @Transactional(readOnly = true)
@@ -86,9 +86,11 @@ public class UserCreditCardService {
 
         var user = retrieveUser(username);
 
-        for (var request : requests) {
-            saveCreditCard(transactionId, user, request);
-        }
+        userCreditCardRepository.saveAll(
+                requests.stream()
+                        .map(request -> this.buildCreditCard(transactionId, user, request))
+                        .toList()
+        );
 
         log.info("Finished to register all credit cards for user: {} - transactionId={}", username, transactionId);
     }
@@ -101,7 +103,7 @@ public class UserCreditCardService {
                 });
     }
 
-    private UserCreditCard saveCreditCard(
+    private UserCreditCard buildCreditCard(
             final UUID transactionId,
             final User user,
             final CreditCardRequest request
@@ -127,7 +129,7 @@ public class UserCreditCardService {
         userCreditCard.setLast4(cardNumber.substring(cardNumber.length() - 4));
         userCreditCard.setEncryptedCardNumber(creditCardCryptoService.encrypt(cardNumber));
 
-        return userCreditCardRepository.save(userCreditCard);
+        return userCreditCard;
     }
 
     @Transactional
