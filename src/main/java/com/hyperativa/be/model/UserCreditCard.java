@@ -7,6 +7,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.UUID;
+
 @ToString(callSuper = true, exclude = "user")
 @EqualsAndHashCode(callSuper = true)
 @Getter
@@ -32,4 +34,7 @@ public class UserCreditCard extends BaseEntity {
 
     @Column(name = "card_last4", nullable = false, length = 4)
     private String last4;
+
+    @Column(name = "transaction_id", nullable = false)
+    private UUID transactionId;
 }

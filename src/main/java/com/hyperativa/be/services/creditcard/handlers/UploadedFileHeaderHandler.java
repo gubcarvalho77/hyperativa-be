@@ -8,7 +8,7 @@ public class UploadedFileHeaderHandler implements UploadedFileHandler<String, Up
 
     @Override
     public UploadedFileDetails apply(String line) {
-        if (line.length() < 51) {
+        if (line == null || line.length() < 51) {
             throw new IllegalArgumentException("invalid header");
         }
 

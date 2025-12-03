@@ -18,4 +18,6 @@ public interface UserCreditCardRepository extends JpaRepository<UserCreditCard, 
           AND ucc.cardHash = :cardHash
     """)
     Optional<UUID> findIdByUsernameAndCardHash(String username, String cardHash);
+
+    void deleteByTransactionId(UUID transactionId);
 }

@@ -8,9 +8,11 @@ import com.hyperativa.be.util.LoggedUsernameSupplier;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,7 +25,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@ActiveProfiles("test")
+@SpringBootTest(properties = {
+        "spring.datasource.url=jdbc:h2:mem:testdb",
+        "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect"
+})
 @AutoConfigureMockMvc(addFilters = false)
 class UserCreditCardControllerTest {
     @Autowired
@@ -101,7 +108,7 @@ class UserCreditCardControllerTest {
 
         mockMvc.perform(multipart("/credit-cards/upload")
                         .file(multipartFile))
-                .andExpect(status().isBadRequest()); // ValidationException -> 400
+                .andExpect(status().isBadRequest());
 
         verify(creditCardBatchService, never()).processFile(any());
     }

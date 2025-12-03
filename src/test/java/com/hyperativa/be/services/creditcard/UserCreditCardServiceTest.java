@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -82,6 +83,30 @@ class UserCreditCardServiceTest {
         assertThat(saved.getCardHash()).isEqualTo(cardHash);
         assertThat(saved.getEncryptedCardNumber()).isEqualTo("encryptedCard");
         assertThat(saved.getLast4()).isEqualTo("1111");
+    }
+
+    @Test
+    void test_register_all_creditCard_ok() {
+        var username = "user1";
+        when(loggedUsernameSupplier.get()).thenReturn(username);
+
+        var user = new User();
+        user.setUsername(username);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        var cardNumbers = List.of(
+                new CreditCardRequest("4111111111111111")
+        );
+
+        when(hashHandler.apply(anyString())).thenReturn("hash123");
+        when(cryptoService.encrypt(anyString())).thenReturn("encryptedCard");
+
+        when(userCreditCardRepository.save(any())).thenReturn(new UserCreditCard());
+
+        service.registerAllCreditCards(UUID.randomUUID(), cardNumbers);
+
+        verify(userRepository).findByUsername(any());
+        verify(userCreditCardRepository, times(cardNumbers.size())).save(any());
     }
 
     @Test

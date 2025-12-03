@@ -3,6 +3,7 @@ package com.hyperativa.be.services.creditcard;
 import com.hyperativa.be.dtos.CreditCardRequest;
 import com.hyperativa.be.exceptions.ResourceExistsException;
 import com.hyperativa.be.exceptions.ResourceNotFoundException;
+import com.hyperativa.be.model.User;
 import com.hyperativa.be.model.UserCreditCard;
 import com.hyperativa.be.repositories.UserCreditCardRepository;
 import com.hyperativa.be.repositories.UserRepository;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 
@@ -41,31 +43,11 @@ public class UserCreditCardService {
 
         log.info("Registering credit card for user: {}", username);
 
-        var userCreditCard = new UserCreditCard();
-
-        userRepository.findByUsername(username)
-                .ifPresentOrElse(
-                        userCreditCard::setUser,
-                        () -> {
-                            log.error("User not found: {}", username);
-                            throw new ResourceNotFoundException("User not found: username=%s".formatted(username));
-                        });
-
-        var cardNumber = normalizedCardNumber.apply(request.cardNumber());
-        var cardHash = creditCardHashHandler.apply(cardNumber);
-
-        if (userCreditCardRepository.findIdByUsernameAndCardHash(username, cardHash).isPresent()) {
-            log.error("Credit card already exists for user: {}", username);
-            throw new ResourceExistsException(
-                    "Credit card already exist for this user - username=%s cardHash=%s".formatted(username, cardHash)
-            );
-        }
-
-        userCreditCard.setCardHash(cardHash);
-        userCreditCard.setLast4(cardNumber.substring(cardNumber.length() - 4));
-        userCreditCard.setEncryptedCardNumber(creditCardCryptoService.encrypt(cardNumber));
-
-        var saved = userCreditCardRepository.save(userCreditCard);
+        var saved = saveCreditCard(
+                UUID.randomUUID(),
+                retrieveUser(username),
+                request
+        );
 
         log.info("Finished to register credit card for user: {}", username);
 
@@ -91,5 +73,71 @@ public class UserCreditCardService {
         log.info("Finished checking credit card for user - username={}", username);
 
         return uuid;
+    }
+
+    @Transactional
+    public void registerAllCreditCards(
+            final UUID transactionId,
+            final List<CreditCardRequest> requests
+    ) {
+        final var username = loggedUsernameSupplier.get();
+
+        log.info("Registering credit cards for user: {} - transactionId={}", username, transactionId);
+
+        var user = retrieveUser(username);
+
+        for (var request : requests) {
+            saveCreditCard(transactionId, user, request);
+        }
+
+        log.info("Finished to register all credit cards for user: {} - transactionId={}", username, transactionId);
+    }
+
+    private User retrieveUser(final String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> {
+                    log.error("User not found: {}", username);
+                    return new ResourceNotFoundException("User not found: username=%s".formatted(username));
+                });
+    }
+
+    private UserCreditCard saveCreditCard(
+            final UUID transactionId,
+            final User user,
+            final CreditCardRequest request
+    ) {
+        var userCreditCard = new UserCreditCard();
+        userCreditCard.setUser(user);
+        userCreditCard.setTransactionId(transactionId);
+
+        var cardNumber = normalizedCardNumber.apply(request.cardNumber());
+        var cardHash = creditCardHashHandler.apply(cardNumber);
+
+        if (userCreditCardRepository.findIdByUsernameAndCardHash(user.getUsername(), cardHash).isPresent()) {
+            log.error("Credit card already exists for user: {}", user.getUsername());
+            throw new ResourceExistsException(
+                    "Credit card already exist for this user - username=%s cardHash=%s".formatted(
+                            user.getUsername(),
+                            cardHash
+                    )
+            );
+        }
+
+        userCreditCard.setCardHash(cardHash);
+        userCreditCard.setLast4(cardNumber.substring(cardNumber.length() - 4));
+        userCreditCard.setEncryptedCardNumber(creditCardCryptoService.encrypt(cardNumber));
+
+        return userCreditCardRepository.save(userCreditCard);
+    }
+
+    @Transactional
+    public void removeAllByTransactionId(
+            final UUID transactionId
+    ) {
+        try {
+            userCreditCardRepository.deleteByTransactionId(transactionId);
+        } catch (Exception e) {
+            log.error("Could not rollback transaction - transactionId={}", transactionId, e);
+        }
     }
 }

@@ -13,7 +13,7 @@ public class UploadedFileLineHandler implements UploadedFileHandler<String, Cred
 
     @Override
     public CreditCardRequest apply(String line) {
-        if (!line.startsWith("C")) {
+        if (line == null || !line.startsWith("C")) {
             throw new IllegalArgumentException("Invalid file content. Line should start with C");
         }
 

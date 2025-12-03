@@ -33,6 +33,11 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: transaction_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
                   name: created_date
                   type: TIMESTAMP
                   constraints:
@@ -77,3 +82,9 @@ databaseChangeLog:
                   name: user_id
               - column:
                   name: card_hash
+        - createIndex:
+            tableName: user_credit_card
+            indexName: idx_user_credit_card_transaction_id
+            columns:
+              - column:
+                  name: transaction_id
